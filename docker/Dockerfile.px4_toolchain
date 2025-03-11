@@ -54,12 +54,7 @@ RUN apt-get update && apt-get -y --quiet --no-install-recommends install \
 	&& apt-get clean autoclean \
 	&& rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
 
-# gtest
-# RUN cd /usr/src/gtest \
-# 	&& mkdir build && cd build \
-# 	&& cmake .. && make -j$(nproc) \
-# 	&& find . -name \*.a -exec cp {} /usr/lib \; \
-# 	&& cd .. && rm -rf build
+
 
 # Install Python 3 pip build dependencies first.
 RUN python3 -m pip install --upgrade pip wheel setuptools importlib-metadata==4.13.0 packaging
@@ -70,9 +65,6 @@ RUN apt-get update && apt-get install -y python3-empy
 # Python 3 dependencies installed by pip
 RUN python3 -m pip install argparse argcomplete coverage cerberus jinja2 kconfiglib matplotlib==3.0.* numpy nunavut>=1.1.0 packaging pkgconfig pyros-genmsg pyulog pyyaml requests serial six toml psutil pyulog wheel jsonschema pynacl
 
-# manual ccache setup
-# RUN ln -s /usr/bin/ccache /usr/lib/ccache/cc \
-# 	&& ln -s /usr/bin/ccache /usr/lib/ccache/c++
 
 # astyle v3.1
 RUN wget -q https://downloads.sourceforge.net/project/astyle/astyle/astyle%203.1/astyle_3.1_linux.tar.gz -O /tmp/astyle.tar.gz \
@@ -97,6 +89,7 @@ ENV TZ=UTC
 # SITL UDP PORTS
 EXPOSE 14556/udp
 EXPOSE 14557/udp
+EXPOSE 18570/udp
 
 
 RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
