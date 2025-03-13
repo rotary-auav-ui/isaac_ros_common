@@ -33,6 +33,20 @@ Please visit the [Isaac ROS Documentation](https://nvidia-isaac-ros.github.io/re
 
 ---
 
+## Quick Installation and Usage (for those who don't want to read the Documentation)
+
+Before using this package, make sure that you've already setup your [Developer Enviroment](https://nvidia-isaac-ros.github.io/v/release-2.1/getting_started/dev_env_setup.html). 
+
+After that you can clone this package to your workspace and run the docker development script. This will mount $ISAAC_ROS_WS defined in your bashrc into the docker container.
+
+Additionally, to configure which docker image to be built, you can add .isaac_ros_common-config file in your scripts folder, additional info on what could be configured is explained in the documentation. 
+
+To add your PX4_Autopilot mountpoint, you can add .px4_mountpoint file in your scripts folder. Currently
+
+---
+
+
+
 ## Latest
 
 Update 2023-10-18: Updated for Isaac ROS 2.0.0.

@@ -23,6 +23,14 @@ function usage() {
 if [[ -f "${ROOT}/.isaac_ros_common-config" ]]; then
     . "${ROOT}/.isaac_ros_common-config"
 fi
+if [[ -f "${ROOT}/.px4_mountpoint" ]]; then
+    . "${ROOT}/.px4_mountpoint"
+    echo "Mounting PX4_Autopilot from ${PX4_MOUNTPOINT} at /PX4_Autopilot"
+    DOCKER_ARGS+=("-v ${PX4_MOUNTPOINT}:/PX4_Autopilot}")
+
+else
+    echo "px4_mountpoint config file does not exist. Not mounting PX4_Autopilot"
+fi
 
 ISAAC_ROS_DEV_DIR="$1"
 if [[ -z "$ISAAC_ROS_DEV_DIR" ]]; then
@@ -199,7 +207,6 @@ docker run -it --rm \
     -v $ISAAC_ROS_DEV_DIR:/workspaces/isaac_ros-dev \
     -v /dev/*:/dev/* \
     -v /etc/localtime:/etc/localtime:ro \
-    -e DISPLAY=:0 \
     --name "$CONTAINER_NAME" \
     --runtime nvidia \
     --user="admin" \
