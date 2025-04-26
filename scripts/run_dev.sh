@@ -26,7 +26,7 @@ fi
 if [[ -f "${ROOT}/.px4_mountpoint" ]]; then
     . "${ROOT}/.px4_mountpoint"
     echo "Mounting PX4_Autopilot from ${PX4_MOUNTPOINT} at /PX4_Autopilot"
-    DOCKER_ARGS+=("-v ${PX4_MOUNTPOINT}:/PX4_Autopilot}")
+    DOCKER_ARGS+=("-v ${PX4_MOUNTPOINT}:/PX4_Autopilot")
 
 else
     echo "px4_mountpoint config file does not exist. Not mounting PX4_Autopilot"

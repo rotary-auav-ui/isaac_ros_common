@@ -10,163 +10,194 @@ LABEL maintainer="Daniel Agar <daniel@agar.ca>"
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-
-RUN apt-get update && apt-get -y --quiet --no-install-recommends install \
-		bzip2 \
-		ca-certificates \
-		ccache \
-		cmake \
-		cppcheck \
-		curl \
-		dirmngr \
-		doxygen \
-		file \
-		g++ \
-		gcc \
-		gdb \
-		git \
-		gnupg \
-		gosu \
-		lcov \
-		libfreetype6-dev \
-		libgtest-dev \
-		libpng-dev \
-		libssl-dev \
-		lsb-release \
-		make \
-		ninja-build \
-		openjdk-8-jdk \
-		openjdk-8-jre \
-		openssh-client \
-		pkg-config \
-		python3-dev \
-		python3-pip \
-		python3-venv \
-		rsync \
-		shellcheck \
-		tzdata \
-		unzip \
-		valgrind \
-		wget \
-		xsltproc \
-		zip \
-	&& apt-get -y autoremove \
-	&& apt-get clean autoclean \
-	&& rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
-
-
-
-# Install Python 3 pip build dependencies first.
-RUN python3 -m pip install --upgrade pip wheel setuptools importlib-metadata==4.13.0 packaging
-
-RUN apt-get update && apt-get install -y python3-empy
-
-
-# Python 3 dependencies installed by pip
-RUN python3 -m pip install argparse argcomplete coverage cerberus jinja2 kconfiglib matplotlib==3.0.* numpy nunavut>=1.1.0 packaging pkgconfig pyros-genmsg pyulog pyyaml requests serial six toml psutil pyulog wheel jsonschema pynacl
-
-
-# astyle v3.1
-RUN wget -q https://downloads.sourceforge.net/project/astyle/astyle/astyle%203.1/astyle_3.1_linux.tar.gz -O /tmp/astyle.tar.gz \
-	&& cd /tmp && tar zxf astyle.tar.gz && cd astyle/src \
-	&& make -f ../build/gcc/Makefile -j$(nproc) && cp bin/astyle /usr/local/bin \
-	&& rm -rf /tmp/*
-
-# create user with id 1001 (jenkins docker workflow default)
-RUN useradd --shell /bin/bash -u 1001 -c "" -m user && usermod -a -G dialout user
-
-# setup virtual X server
-RUN mkdir /tmp/.X11-unix && \
-	chmod 1777 /tmp/.X11-unix && \
-	chown -R root:root /tmp/.X11-unix
-ENV DISPLAY :99
-
+ENV PATH="/usr/lib/ccache:/px4/build/px4_sitl_default/bin:${PATH}"
 ENV CCACHE_UMASK=000
-ENV PATH="/usr/lib/ccache:$PATH"
 ENV TERM=xterm
 ENV TZ=UTC
+ENV QT_X11_NO_MITSHM 1
+ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+
+# Install base dependencies
+RUN apt-get update && apt-get -y --quiet --no-install-recommends install \
+        bzip2 \
+        ca-certificates \
+        ccache \
+        cmake \
+        cppcheck \
+        curl \
+        dirmngr \
+        doxygen \
+        file \
+        g++ \
+        gcc \
+        gdb \
+        git \
+        gnupg \
+        gosu \
+        lcov \
+        libfreetype6-dev \
+        libgtest-dev \
+        libpng-dev \
+        libssl-dev \
+        lsb-release \
+        make \
+        ninja-build \
+        openjdk-8-jdk \
+        openjdk-8-jre \
+        openssh-client \
+        pkg-config \
+        python3-dev \
+        python3-pip \
+        python3-venv \
+        rsync \
+        shellcheck \
+        tzdata \
+        unzip \
+        valgrind \
+        wget \
+        xsltproc \
+        zip \
+    && apt-get -y autoremove \
+    && apt-get clean autoclean \
+    && rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
+
+# Install Python tools
+RUN python3 -m pip install --upgrade pip wheel setuptools importlib-metadata==4.13.0 packaging
+RUN apt-get update && apt-get install -y python3-empy
+
+# Install Python dependencies
+RUN python3 -m pip install \
+    argparse \
+    argcomplete \
+    coverage \
+    cerberus \
+    jinja2 \
+    kconfiglib \
+    matplotlib==3.0.* \
+    numpy \
+    nunavut>=1.1.0 \
+    packaging \
+    pkgconfig \
+    pyros-genmsg \
+    pyulog \
+    pyyaml \
+    requests \
+    serial \
+    six \
+    toml \
+    psutil \
+    pyulog \
+    wheel \
+    jsonschema \
+    pynacl \
+    pymongo \
+    pybson
+
+# Install astyle
+RUN wget -q https://downloads.sourceforge.net/project/astyle/astyle/astyle%203.1/astyle_3.1_linux.tar.gz -O /tmp/astyle.tar.gz \
+    && cd /tmp && tar zxf astyle.tar.gz && cd astyle/src \
+    && make -f ../build/gcc/Makefile -j$(nproc) && cp bin/astyle /usr/local/bin \
+    && rm -rf /tmp/*
+
+# Create user
+RUN useradd --shell /bin/bash -u 1001 -c "" -m user && usermod -a -G dialout user
+
+# Setup X server
+RUN mkdir /tmp/.X11-unix && \
+    chmod 1777 /tmp/.X11-unix && \
+    chown -R root:root /tmp/.X11-unix
+ENV DISPLAY :99
 
 # SITL UDP PORTS
 EXPOSE 14556/udp
 EXPOSE 14557/udp
 EXPOSE 18570/udp
 
-
+# Install Gazebo Garden
 RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
-	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
-	&& apt-get update \
-	&& DEBIAN_FRONTEND=noninteractive apt-get -y --quiet --no-install-recommends install \
-		ant \
-		binutils \
-		bc \
-		dirmngr \
-		gstreamer1.0-plugins-bad \
-		gstreamer1.0-plugins-base \
-		gstreamer1.0-plugins-good \
-		gstreamer1.0-plugins-ugly \
-		libeigen3-dev \
-		libgstreamer-plugins-base1.0-dev \
-		libimage-exiftool-perl \
-		libopencv-dev \
-		libxml2-utils \
-		mesa-utils \
-		protobuf-compiler \
-		x-window-system \
-		gz-garden \
-	&& apt-get -y autoremove \
-	&& apt-get clean autoclean \
-	&& rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get -y --quiet --no-install-recommends install \
+        ant \
+        binutils \
+        bc \
+        dirmngr \
+        gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-base \
+        gstreamer1.0-plugins-good \
+        gstreamer1.0-plugins-ugly \
+        libeigen3-dev \
+        libgstreamer-plugins-base1.0-dev \
+        libimage-exiftool-perl \
+        libopencv-dev \
+        libxml2-utils \
+        mesa-utils \
+        protobuf-compiler \
+        x-window-system \
+        gz-garden \
+    && apt-get -y autoremove \
+    && apt-get clean autoclean \
+    && rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
 
+# Install development tools - split into multiple commands for reliability
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y --quiet --no-install-recommends install \
+        automake \
+        binutils-dev \
+        bison \
+        build-essential \
+        flex \
+        g++-multilib \
+        gcc-multilib \
+        gdb-multiarch \
+        genromfs \
+        gettext \
+        gperf \
+        libelf-dev \
+        libexpat-dev \
+        libgmp-dev \
+        libisl-dev \
+        libmpc-dev \
+        libmpfr-dev \
+        libncurses5 \
+        libncurses5-dev \
+        libncursesw5-dev \
+        libtool \
+        pkg-config \
+        screen \
+        texinfo \
+        util-linux \
+        vim-common \
+    && apt-get -y autoremove \
+    && apt-get clean autoclean
 
-	RUN apt-get update \
-	&& DEBIAN_FRONTEND=noninteractive apt-get -y --quiet --no-install-recommends install \
-		automake \
-		binutils-dev \
-		bison \
-		build-essential \
-		flex \
-		g++-multilib \
-		gcc-multilib \
-		gdb-multiarch \
-		genromfs \
-		gettext \
-		gperf \
-		libelf-dev \
-		libexpat-dev \
-		libgmp-dev \
-		libisl-dev \
-		libmpc-dev \
-		libmpfr-dev \
-		libncurses5 \
-		libncurses5-dev \
-		libncursesw5-dev \
-		libtool \
-		pkg-config \
-		screen \
-		texinfo \
-		u-boot-tools \
-		util-linux \
-		vim-common \
-		mongodb-clients \
-	&& apt-get -y autoremove \
-	&& apt-get clean autoclean \
-	&& rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
+# Install MongoDB tools separately
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y --quiet --no-install-recommends install \
+        mongodb-clients \
+        libbson-dev \
+        libmongoc-dev \
+        mongodb-database-tools \
+    || echo "MongoDB tools installation partially failed but continuing"
 
+# Install u-boot-tools separately
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y --quiet --no-install-recommends install \
+        u-boot-tools \
+    || echo "u-boot-tools installation failed but continuing"
 
+# Final cleanup
+RUN rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
 
+# Install symforce
 RUN python3 -m pip install symforce
 
-# Some QT-Apps/Gazebo don't not show controls without this
-ENV QT_X11_NO_MITSHM 1
-
-# Use UTF8 encoding in java tools (needed to compile jMAVSim)
-ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-
 # Install JSBSim
-RUN wget https://github.com/JSBSim-Team/jsbsim/releases/download/v1.1.1a/JSBSim-devel_1.1.1-134.focal.amd64.deb
-RUN dpkg -i JSBSim-devel_1.1.1-134.focal.amd64.deb
+RUN wget https://github.com/JSBSim-Team/jsbsim/releases/download/v1.1.1a/JSBSim-devel_1.1.1-134.focal.amd64.deb -O /tmp/jsbsim.deb \
+    && dpkg -i /tmp/jsbsim.deb \
+    && rm /tmp/jsbsim.deb
 
-# create and start as LOCAL_USER_ID
+# Entrypoint
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

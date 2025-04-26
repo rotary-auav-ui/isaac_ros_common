@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_visual_slam_interfaces/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_tensor_list_interfaces/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_pointcloud_interfaces/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_nova_interfaces/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_nitros_bridge_interfaces/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_common/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_bi3d_interfaces/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/install/isaac_ros_apriltag_interfaces/include/**",
+        "/opt/ros/humble/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/src/isaac_ros_common/isaac_ros_common/include/**",
+        "/media/bantalemak/Ubuntu_SSD_VGEN1/workspaces/isaac_ros-dev/src/isaac_ros_visual_slam/isaac_ros_visual_slam/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
